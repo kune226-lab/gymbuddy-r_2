@@ -40,20 +40,45 @@ import {
   HeartPulse,
   ChevronDown,
   ArrowRight,
+  Moon,
+  Sun,
+  Layers,
 } from 'lucide-react';
 
-/* --- SEKCJA NAPRAWCZA WYGLĄD --- */
+/* --- KONFIGURACJA TAILWIND Z DARK MODE --- */
 if (typeof document !== 'undefined') {
   if (!document.querySelector('script[src*="tailwindcss"]')) {
     const script = document.createElement('script');
     script.src = 'https://cdn.tailwindcss.com';
     script.async = false;
     document.head.appendChild(script);
+    
+    // Konfiguracja Tailwind dla Dark Mode
+    const configScript = document.createElement('script');
+    configScript.innerHTML = `
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              gray: {
+                750: '#2d3748',
+                850: '#1a202c',
+                950: '#171923',
+              }
+            }
+          }
+        }
+      }
+    `;
+    document.head.appendChild(configScript);
   }
+  
   const fontFix = document.createElement('style');
   fontFix.innerHTML = `
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important; background-color: #f9fafb !important; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important; }
     input { border: 1px solid #e5e7eb; }
+    .dark input { border-color: #374151; background-color: #1f2937; color: white; }
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { 
       -webkit-appearance: none; 
@@ -88,7 +113,6 @@ const useStickyState = (defaultValue, key) => {
   return [value, setValue];
 };
 
-// Obliczanie sumy powtórzeń
 const getTotalReps = (val) => {
   if (!val) return 0;
   if (Array.isArray(val)) {
@@ -105,7 +129,6 @@ const getTotalReps = (val) => {
   return Number(val);
 };
 
-// Formatowanie historii (zamiana obiektów na ładny tekst)
 const formatHistoryString = (val) => {
   if (!val) return '';
   if (Array.isArray(val)) {
@@ -151,15 +174,15 @@ const CustomDatePicker = ({
 }) => {
   return (
     <div className={`relative group min-w-[150px] ${className}`}>
-      <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm group-hover:border-blue-400 group-hover:ring-2 group-hover:ring-blue-50 transition-all cursor-pointer h-full">
-        <div className="bg-gray-50 text-gray-500 p-1.5 rounded-lg group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+      <div className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 shadow-sm group-hover:border-blue-400 group-hover:ring-2 group-hover:ring-blue-50 dark:group-hover:ring-blue-900 transition-all cursor-pointer h-full">
+        <div className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 p-1.5 rounded-lg group-hover:bg-blue-50 dark:group-hover:bg-gray-600 group-hover:text-blue-600 transition-colors">
           <Calendar size={16} />
         </div>
         <div className="flex flex-col flex-1">
           <span className="text-[9px] uppercase font-bold text-gray-400 leading-tight tracking-wider">
             {label}
           </span>
-          <span className="font-bold text-gray-800 text-sm capitalize leading-tight">
+          <span className="font-bold text-gray-800 dark:text-gray-200 text-sm capitalize leading-tight">
             {formatDatePL(value) || '-'}
           </span>
         </div>
@@ -178,10 +201,10 @@ const CustomDatePicker = ({
   );
 };
 
-// --- Komponenty UI ---
+// --- Komponenty UI z Dark Mode ---
 const Card = ({ children, className = '' }) => (
   <div
-    className={`bg-white rounded-xl shadow-sm border border-gray-100 p-6 ${className}`}
+    className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors ${className}`}
   >
     {children}
   </div>
@@ -202,12 +225,12 @@ const Button = ({
     sm: 'px-2 py-1 text-xs',
   };
   const styles = {
-    primary: 'bg-black text-white hover:bg-gray-800',
-    secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-    ghost: 'text-gray-500 hover:bg-gray-100 hover:text-gray-900',
+    primary: 'bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200',
+    secondary: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600',
+    ghost: 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white',
     success: 'bg-green-600 text-white hover:bg-green-700',
-    danger: 'bg-red-50 text-red-500 hover:bg-red-100',
-    outline: 'border border-gray-200 text-gray-600 hover:bg-gray-50 bg-white',
+    danger: 'bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40',
+    outline: 'border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800',
   };
   return (
     <button
@@ -223,13 +246,13 @@ const Button = ({
 
 const Input = ({ className = '', ...props }) => (
   <input
-    className={`w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm ${className}`}
+    className={`w-full border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${className}`}
     {...props}
   />
 );
 
 const Label = ({ children }) => (
-  <h3 className="text-gray-900 font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+  <h3 className="text-gray-900 dark:text-gray-100 font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
     {children}
   </h3>
 );
@@ -255,7 +278,7 @@ const ProgressBar = ({
   return (
     <div className="w-full mt-1">
       {(label || unit) && (
-        <div className="flex justify-between text-[10px] uppercase font-bold text-gray-500 mb-1">
+        <div className="flex justify-between text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 mb-1">
           <span className="flex items-center gap-1">
             {label}
             {isExceeded && (
@@ -270,8 +293,8 @@ const ProgressBar = ({
               isExceeded
                 ? 'text-red-500 font-bold'
                 : isDone
-                ? 'text-green-600 font-bold'
-                : ''
+                ? 'text-green-600 dark:text-green-400 font-bold'
+                : 'dark:text-gray-300'
             }
           >
             {valCurrent} / {valTarget} {unit}
@@ -279,7 +302,7 @@ const ProgressBar = ({
         </div>
       )}
       <div
-        className={`w-full bg-gray-100 rounded-full ${
+        className={`w-full bg-gray-100 dark:bg-gray-700 rounded-full ${
           size === 'sm' ? 'h-1' : 'h-1.5'
         } overflow-hidden`}
       >
@@ -294,7 +317,7 @@ const ProgressBar = ({
   );
 };
 
-// --- ExerciseSetLogger (NAPRAWIONE INPUTY I UI) ---
+// --- ExerciseSetLogger ---
 const ExerciseSetLogger = ({ value, onChange, goal }) => {
   const normalizeData = (input) => {
     if (!Array.isArray(input)) return [];
@@ -319,9 +342,7 @@ const ExerciseSetLogger = ({ value, onChange, goal }) => {
   }, [value]);
 
   const addSet = () => setSets([...sets, { r: '', w: '' }]);
-
   const removeSet = (index) => setSets(sets.filter((_, i) => i !== index));
-
   const updateSet = (index, field, val) => {
     const newSets = [...sets];
     newSets[index] = { ...newSets[index], [field]: val };
@@ -332,7 +353,6 @@ const ExerciseSetLogger = ({ value, onChange, goal }) => {
     const cleanSets = sets
       .filter((s) => s.r !== '' && Number(s.r) > 0)
       .map((s) => ({ r: Number(s.r), w: s.w ? Number(s.w) : null }));
-
     onChange(cleanSets);
     setIsEditing(false);
   };
@@ -341,162 +361,86 @@ const ExerciseSetLogger = ({ value, onChange, goal }) => {
 
   if (isEditing) {
     return (
-      <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 mt-2">
-        {/* Header Tabeli Serii */}
+      <div className="bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg border border-gray-200 dark:border-gray-600 mt-2">
         <div className="flex items-center gap-2 mb-2 px-1">
-          <span className="text-[9px] font-bold text-gray-400 uppercase w-4 text-center">
-            #
-          </span>
+          <span className="text-[9px] font-bold text-gray-400 uppercase w-4 text-center">#</span>
           <div className="flex-1 flex gap-2">
-            <span className="flex-1 text-[9px] font-bold text-gray-400 uppercase text-center">
-              KG (opcja)
-            </span>
-            <span className="flex-1 text-[9px] font-bold text-gray-400 uppercase text-center">
-              Powtórzenia
-            </span>
+            <span className="flex-1 text-[9px] font-bold text-gray-400 uppercase text-center">KG</span>
+            <span className="flex-1 text-[9px] font-bold text-gray-400 uppercase text-center">Powt.</span>
           </div>
           <span className="w-5"></span>
         </div>
-
-        {/* Lista Inputów */}
         <div className="space-y-2 mb-3">
           {sets.map((set, idx) => (
             <div key={idx} className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-400 w-4 text-center">
-                {idx + 1}
-              </span>
+              <span className="text-xs font-bold text-gray-400 w-4 text-center">{idx + 1}</span>
               <div className="flex-1 flex gap-2">
                 <Input
                   type="number"
                   value={set.w}
                   onChange={(e) => updateSet(idx, 'w', e.target.value)}
                   placeholder="kg"
-                  className="h-8 text-center text-sm px-1 bg-white shadow-sm flex-1"
+                  className="h-8 text-center text-sm px-1 flex-1"
                 />
                 <Input
                   type="number"
                   value={set.r}
                   onChange={(e) => updateSet(idx, 'r', e.target.value)}
                   placeholder="0"
-                  className="h-8 text-center font-bold text-gray-900 px-1 bg-white shadow-sm flex-1"
+                  className="h-8 text-center font-bold px-1 flex-1"
                   autoFocus={idx === sets.length - 1 && !set.r}
                 />
               </div>
-              <button
-                onClick={() => removeSet(idx)}
-                className="text-red-300 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors w-5 flex justify-center"
-              >
+              <button onClick={() => removeSet(idx)} className="text-red-300 hover:text-red-500 p-1 w-5 flex justify-center">
                 <X size={14} />
               </button>
             </div>
           ))}
         </div>
-
-        {/* Przyciski Akcji */}
         <div className="flex gap-2">
-          <Button
-            onClick={addSet}
-            variant="secondary"
-            size="sm"
-            className="flex-1 text-xs py-1.5 bg-white border border-gray-200 hover:bg-gray-50"
-          >
-            <Plus size={12} /> Seria
-          </Button>
-          <Button
-            onClick={handleSave}
-            variant="success"
-            size="sm"
-            className="flex-1 text-xs py-1.5 shadow-sm"
-          >
-            <Save size={12} /> Zapisz
-          </Button>
+          <Button onClick={addSet} variant="secondary" size="sm" className="flex-1 text-xs py-1.5"><Plus size={12} /> Seria</Button>
+          <Button onClick={handleSave} variant="success" size="sm" className="flex-1 text-xs py-1.5"><Save size={12} /> Zapisz</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-2 w-full mt-2 relative group hover:border-blue-300 transition-colors">
-      <button
-        onClick={() => setIsEditing(true)}
-        className="absolute top-2 right-2 text-gray-400 hover:text-blue-500 p-1.5 bg-gray-50 hover:bg-blue-50 rounded-md opacity-0 group-hover:opacity-100 transition-all z-10"
-        title="Edytuj serie"
-      >
-        <Edit2 size={14} />
-      </button>
-
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 w-full mt-2 relative group hover:border-blue-300 transition-colors">
+      <button onClick={() => setIsEditing(true)} className="absolute top-2 right-2 text-gray-400 hover:text-blue-500 p-1.5 bg-gray-50 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 transition-all z-10"><Edit2 size={14} /></button>
       {sets.length > 0 ? (
         <div className="space-y-2">
           {sets.map((set, i) => {
             const reps = Number(set.r);
             const isSetExceeded = targetPerSet > 0 && reps > targetPerSet;
             const isSetDone = targetPerSet > 0 && reps >= targetPerSet;
-
             return (
               <div key={i} className="flex items-center gap-2 text-sm">
-                <div className="text-[9px] font-bold text-gray-400 w-5 uppercase">
-                  S{i + 1}
-                </div>
-
+                <div className="text-[9px] font-bold text-gray-400 w-5 uppercase">S{i + 1}</div>
                 <div className="flex-1 flex flex-col justify-center">
                   <div className="flex justify-between items-center text-xs mb-0.5">
-                    <span className="font-bold text-gray-800 flex items-center gap-1.5">
-                      {set.w ? (
-                        <span className="bg-gray-100 px-1.5 rounded text-[10px] text-gray-600 font-mono border border-gray-200">
-                          {set.w}kg
-                        </span>
-                      ) : null}
-                      <span className="flex items-center gap-1">
-                        {reps}x
-                        {isSetExceeded && (
-                          <Flame
-                            size={10}
-                            className="text-red-500 fill-red-500"
-                          />
-                        )}
-                      </span>
+                    <span className="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                      {set.w ? <span className="bg-gray-100 dark:bg-gray-700 px-1.5 rounded text-[10px] text-gray-600 dark:text-gray-300 font-mono border border-gray-200 dark:border-gray-600">{set.w}kg</span> : null}
+                      <span className="flex items-center gap-1">{reps}x{isSetExceeded && <Flame size={10} className="text-red-500 fill-red-500" />}</span>
                     </span>
                   </div>
                   {targetPerSet > 0 && (
-                    <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          isSetExceeded
-                            ? 'bg-red-500'
-                            : isSetDone
-                            ? 'bg-green-500'
-                            : 'bg-blue-400'
-                        }`}
-                        style={{
-                          width: `${Math.min(
-                            (reps / targetPerSet) * 100,
-                            100
-                          )}%`,
-                        }}
-                      ></div>
+                    <div className="h-1 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-500 ${isSetExceeded ? 'bg-red-500' : isSetDone ? 'bg-green-500' : 'bg-blue-400'}`} style={{ width: `${Math.min((reps / targetPerSet) * 100, 100)}%` }}></div>
                     </div>
                   )}
                 </div>
               </div>
             );
           })}
-          <div className="pt-2 border-t border-gray-100 flex justify-between items-center mt-1">
-            <span className="text-[10px] font-bold text-gray-500 uppercase">
-              Suma
-            </span>
-            <span className="text-xs font-bold text-gray-900">
-              {total} powt.
-            </span>
+          <div className="pt-2 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center mt-1">
+            <span className="text-[10px] font-bold text-gray-500 uppercase">Suma</span>
+            <span className="text-xs font-bold text-gray-900 dark:text-gray-100">{total} powt.</span>
           </div>
         </div>
       ) : (
-        <div
-          className="flex flex-col items-center justify-center py-4 text-gray-400 cursor-pointer hover:bg-gray-50 rounded transition-colors"
-          onClick={() => setIsEditing(true)}
-        >
-          <List size={20} className="mb-1 opacity-20" />
-          <span className="text-[10px] font-medium">Brak serii</span>
-          <span className="text-[9px] text-blue-500 mt-0.5">Dodaj wynik</span>
+        <div className="flex flex-col items-center justify-center py-4 text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 rounded transition-colors" onClick={() => setIsEditing(true)}>
+          <List size={20} className="mb-1 opacity-20" /><span className="text-[10px] font-medium">Brak serii</span><span className="text-[9px] text-blue-500 mt-0.5">Dodaj wynik</span>
         </div>
       )}
     </div>
@@ -530,47 +474,21 @@ const SmartField = ({
     return (
       <div className="flex gap-2 items-center w-full">
         <div className="flex-1">
-          {label && (
-            <span className="text-[10px] text-gray-500 uppercase font-bold block mb-1">
-              {label}
-            </span>
-          )}
-          <Input
-            type="number"
-            placeholder={placeholder}
-            value={tempVal}
-            onChange={(e) => setTempVal(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-          />
+          {label && <span className="text-[10px] text-gray-500 uppercase font-bold block mb-1">{label}</span>}
+          <Input type="number" placeholder={placeholder} value={tempVal} onChange={(e) => setTempVal(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSave()} />
         </div>
-        <Button
-          onClick={handleSave}
-          variant="success"
-          size="icon"
-          className="mt-auto h-[38px] w-[38px]"
-        >
-          <Save size={16} />
-        </Button>
+        <Button onClick={handleSave} variant="success" size="icon" className="mt-auto h-[38px] w-[38px]"><Save size={16} /></Button>
       </div>
     );
   }
 
   return (
-    <div className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-full min-h-[58px]">
+    <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 w-full min-h-[58px]">
       <div className="flex flex-col">
-        {label && (
-          <span className="text-[10px] text-gray-400 uppercase font-bold">
-            {label}
-          </span>
-        )}
-        <span className="font-bold text-gray-800 text-lg">
-          {value || 0}{' '}
-          <span className="text-sm font-normal text-gray-500">{unit}</span>
-        </span>
+        {label && <span className="text-[10px] text-gray-400 uppercase font-bold">{label}</span>}
+        <span className="font-bold text-gray-800 dark:text-gray-200 text-lg">{value || 0} <span className="text-sm font-normal text-gray-500">{unit}</span></span>
       </div>
-      <Button onClick={() => setIsEditing(true)} variant="ghost" size="icon">
-        <Edit2 size={16} />
-      </Button>
+      <Button onClick={() => setIsEditing(true)} variant="ghost" size="icon"><Edit2 size={16} /></Button>
     </div>
   );
 };
@@ -578,7 +496,6 @@ const SmartField = ({
 // --- HEATMAPA ---
 const ActivityHeatmap = ({ logs, goals }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -591,11 +508,8 @@ const ActivityHeatmap = ({ logs, goals }) => {
 
   const days = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1;
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(
-      day
-    ).padStart(2, '0')}`;
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const log = logs[dateStr];
-
     let intensity = 0;
     let isFire = false;
     let totalRepsToday = 0;
@@ -614,92 +528,41 @@ const ActivityHeatmap = ({ logs, goals }) => {
         });
       }
       if (log.cardio && Object.keys(log.cardio).length > 0) intensity += 1;
-
-      if (totalGoalToday > 0 && totalRepsToday > totalGoalToday) {
-        isFire = true;
-      }
+      if (totalGoalToday > 0 && totalRepsToday > totalGoalToday) isFire = true;
     }
-
     return { day, dateStr, intensity, isFire };
   });
 
   const getCellClass = (d) => {
-    if (d.isFire)
-      return 'bg-red-500 text-white shadow-red-200 shadow-md scale-105 border-red-600';
-    if (d.intensity === 0) return 'bg-gray-100 text-gray-300';
-    if (d.intensity <= 2) return 'bg-green-100 text-green-700';
-    if (d.intensity <= 4) return 'bg-green-300 text-green-800';
+    if (d.isFire) return 'bg-red-500 text-white shadow-red-200 dark:shadow-red-900 shadow-md scale-105 border-red-600';
+    if (d.intensity === 0) return 'bg-gray-100 dark:bg-gray-700 text-gray-300 dark:text-gray-600';
+    if (d.intensity <= 2) return 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300';
+    if (d.intensity <= 4) return 'bg-green-300 dark:bg-green-700 text-green-800 dark:text-green-100';
     return 'bg-green-500 text-white';
   };
 
   return (
     <Card className="mb-6">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-gray-800 flex items-center gap-2">
-          <CalendarDays size={18} className="text-green-600" /> Aktywność w tym
-          miesiącu
+        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <CalendarDays size={18} className="text-green-600" /> Aktywność w tym miesiącu
         </h3>
-        <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
-          <button
-            onClick={() => shiftMonth(-1)}
-            className="p-1 hover:bg-white rounded shadow-sm text-gray-600"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <span className="text-xs font-bold text-gray-700 w-32 text-center capitalize">
-            {currentDate.toLocaleString('pl-PL', {
-              month: 'long',
-              year: 'numeric',
-            })}
-          </span>
-          <button
-            onClick={() => shiftMonth(1)}
-            className="p-1 hover:bg-white rounded shadow-sm text-gray-600"
-          >
-            <ChevronRight size={16} />
-          </button>
+        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg p-1">
+          <button onClick={() => shiftMonth(-1)} className="p-1 hover:bg-white dark:hover:bg-gray-600 rounded shadow-sm text-gray-600 dark:text-gray-300"><ChevronLeft size={16} /></button>
+          <span className="text-xs font-bold text-gray-700 dark:text-gray-200 w-32 text-center capitalize">{currentDate.toLocaleString('pl-PL', { month: 'long', year: 'numeric' })}</span>
+          <button onClick={() => shiftMonth(1)} className="p-1 hover:bg-white dark:hover:bg-gray-600 rounded shadow-sm text-gray-600 dark:text-gray-300"><ChevronRight size={16} /></button>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-2">
         {['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'].map((d) => (
-          <div
-            key={d}
-            className="text-center text-[10px] text-gray-400 uppercase font-bold"
-          >
-            {d}
-          </div>
+          <div key={d} className="text-center text-[10px] text-gray-400 uppercase font-bold">{d}</div>
         ))}
         {days.map((d) => (
-          <div
-            key={d.dateStr}
-            className={`aspect-square rounded-md flex flex-col items-center justify-center text-xs font-bold transition-all relative border border-transparent ${getCellClass(
-              d
-            )}`}
-            title={`${d.dateStr}`}
-          >
+          <div key={d.dateStr} className={`aspect-square rounded-md flex flex-col items-center justify-center text-xs font-bold transition-all relative border border-transparent ${getCellClass(d)}`} title={`${d.dateStr}`}>
             {d.day}
-            {d.isFire && (
-              <Flame
-                size={10}
-                className="absolute -top-1 -right-1 text-yellow-300 fill-yellow-300 animate-pulse drop-shadow-sm"
-              />
-            )}
+            {d.isFire && <Flame size={10} className="absolute -top-1 -right-1 text-yellow-300 fill-yellow-300 animate-pulse drop-shadow-sm" />}
           </div>
         ))}
-      </div>
-      <div className="mt-4 flex gap-4 text-[10px] text-gray-400 justify-end">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-gray-100 rounded"></div> Brak
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-green-300 rounded"></div> Trening
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-red-500 rounded flex items-center justify-center">
-            <Flame size={8} className="text-white fill-white" />
-          </div>{' '}
-          Rekord
-        </div>
       </div>
     </Card>
   );
@@ -709,6 +572,7 @@ const ActivityHeatmap = ({ logs, goals }) => {
 
 export default function WorkoutJournal() {
   const [activeTab, setActiveTab] = useState('day');
+  const [isDarkMode, setIsDarkMode] = useStickyState(false, 'gymbuddy_theme');
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0]
   );
@@ -726,6 +590,13 @@ export default function WorkoutJournal() {
     ['Pompki', 'Przysiady', 'Plank'],
     'gymbuddy_exercises'
   );
+  
+  // NOWE: Grupy ćwiczeń
+  const [exerciseGroups, setExerciseGroups] = useStickyState(
+    { Pompki: 'Klatka', Przysiady: 'Nogi', Plank: 'Brzuch' },
+    'gymbuddy_exercise_groups'
+  );
+
   const [cardioList, setCardioList] = useStickyState(
     ['Bieganie', 'Rower'],
     'gymbuddy_cardio'
@@ -745,7 +616,6 @@ export default function WorkoutJournal() {
 
   const [logs, setLogs] = useStickyState(
     {
-      // Przykładowe dane startowe
       [selectedDate]: {
         weight: 75,
         measurements: {},
@@ -760,7 +630,16 @@ export default function WorkoutJournal() {
     setWidgetDate(selectedDate);
   }, [selectedDate]);
 
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   const [newExerciseName, setNewExerciseName] = useState('');
+  const [newExerciseGroup, setNewExerciseGroup] = useState('Inne');
   const [newCardioName, setNewCardioName] = useState('');
 
   const currentLog = logs[selectedDate] || {
@@ -769,6 +648,10 @@ export default function WorkoutJournal() {
     cardio: {},
     exercises: {},
   };
+  
+  const availableGroups = ['Klatka', 'Plecy', 'Nogi', 'Barki', 'Biceps', 'Triceps', 'Brzuch', 'Inne'];
+
+  const getExerciseGroup = (exName) => exerciseGroups[exName] || 'Inne';
 
   // --- REKORDY ---
   const personalRecords = useMemo(() => {
@@ -780,11 +663,9 @@ export default function WorkoutJournal() {
         if (log.exercises && log.exercises[ex]) {
           const val = log.exercises[ex];
           let currentMax = 0;
-
           if (Array.isArray(val)) {
             currentMax = Math.max(
               ...val.map((item) => {
-                // Obsługa obiektów z wagą w historii
                 return typeof item === 'object' ? Number(item.r) : Number(item);
               })
             );
@@ -804,7 +685,6 @@ export default function WorkoutJournal() {
     return records;
   }, [logs, exercisesList]);
 
-  // --- KOPIOWANIE ---
   const copyLastWorkout = () => {
     const dates = Object.keys(logs).sort().reverse();
     const lastDate = dates.find(
@@ -864,10 +744,19 @@ export default function WorkoutJournal() {
 
   const removeType = (list, setList, name) =>
     setList(list.filter((item) => item !== name));
-  const addToList = (list, setList, name, setName) => {
-    if (name && !list.includes(name)) {
-      setList([...list, name]);
-      setName('');
+    
+  const addExerciseToList = () => {
+    if (newExerciseName && !exercisesList.includes(newExerciseName)) {
+      setExercisesList([...exercisesList, newExerciseName]);
+      setExerciseGroups(prev => ({...prev, [newExerciseName]: newExerciseGroup}));
+      setNewExerciseName('');
+    }
+  };
+
+  const addCardioToList = () => {
+    if (newCardioName && !cardioList.includes(newCardioName)) {
+      setCardioList([...cardioList, newCardioName]);
+      setNewCardioName('');
     }
   };
 
@@ -1022,17 +911,6 @@ export default function WorkoutJournal() {
     });
   }, [logs, dateRange]);
 
-  const shiftWeek = (direction) => {
-    const s = new Date(dateRange.start);
-    const e = new Date(dateRange.end);
-    s.setDate(s.getDate() + direction * 7);
-    e.setDate(e.getDate() + direction * 7);
-    setDateRange({
-      start: s.toISOString().split('T')[0],
-      end: e.toISOString().split('T')[0],
-    });
-  };
-
   // --- WIDOKI ---
 
   const renderSummaryCard = () => (
@@ -1059,11 +937,7 @@ export default function WorkoutJournal() {
                   : 'text-gray-300 hover:text-white'
               }`}
             >
-              {mode === 'day'
-                ? 'Dzień'
-                : mode === 'week'
-                ? 'Tydzień'
-                : 'Miesiąc'}
+              {mode === 'day' ? 'Dzień' : mode === 'week' ? 'Tydzień' : 'Miesiąc'}
             </button>
           ))}
         </div>
@@ -1076,22 +950,18 @@ export default function WorkoutJournal() {
           </h4>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="bg-gray-900/50 p-2 rounded-lg">
-              <div className="text-xl font-bold text-white">
-                {summaryData.totalKcal}
-              </div>
+              <div className="text-xl font-bold text-white">{summaryData.totalKcal}</div>
               <div className="text-[9px] text-gray-400 uppercase">Kcal</div>
             </div>
             <div className="bg-gray-900/50 p-2 rounded-lg">
               <div className="text-xl font-bold text-blue-400">
-                {summaryData.totalTime}
-                <span className="text-xs text-gray-500 ml-0.5">m</span>
+                {summaryData.totalTime}<span className="text-xs text-gray-500 ml-0.5">m</span>
               </div>
               <div className="text-[9px] text-gray-400 uppercase">Czas</div>
             </div>
             <div className="bg-gray-900/50 p-2 rounded-lg">
               <div className="text-xl font-bold text-teal-400">
-                {summaryData.totalKm}
-                <span className="text-xs text-gray-500 ml-0.5">km</span>
+                {summaryData.totalKm}<span className="text-xs text-gray-500 ml-0.5">km</span>
               </div>
               <div className="text-[9px] text-gray-400 uppercase">Dystans</div>
             </div>
@@ -1104,192 +974,88 @@ export default function WorkoutJournal() {
           </h4>
           <div className="grid grid-cols-2 gap-2 text-center">
             <div className="bg-gray-900/50 p-2 rounded-lg">
-              <div className="text-xl font-bold text-purple-400">
-                {summaryData.totalReps}
-              </div>
-              <div className="text-[9px] text-gray-400 uppercase">
-                Suma Powtórzeń
-              </div>
+              <div className="text-xl font-bold text-purple-400">{summaryData.totalReps}</div>
+              <div className="text-[9px] text-gray-400 uppercase">Suma Powtórzeń</div>
             </div>
             <div className="bg-gray-900/50 p-2 rounded-lg">
               {summaryData.weightDiff !== null ? (
-                <div
-                  className={`text-xl font-bold flex items-center justify-center gap-1 ${
-                    parseFloat(summaryData.weightDiff) > 0
-                      ? 'text-red-400'
-                      : 'text-green-400'
-                  }`}
-                >
-                  {parseFloat(summaryData.weightDiff) > 0 ? (
-                    <ArrowUp size={14} />
-                  ) : parseFloat(summaryData.weightDiff) < 0 ? (
-                    <ArrowDown size={14} />
-                  ) : (
-                    <Minus size={14} />
-                  )}
-                  {Math.abs(summaryData.weightDiff)}{' '}
-                  <span className="text-xs text-gray-500">kg</span>
+                <div className={`text-xl font-bold flex items-center justify-center gap-1 ${parseFloat(summaryData.weightDiff) > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                  {parseFloat(summaryData.weightDiff) > 0 ? <ArrowUp size={14} /> : parseFloat(summaryData.weightDiff) < 0 ? <ArrowDown size={14} /> : <Minus size={14} />}
+                  {Math.abs(summaryData.weightDiff)} <span className="text-xs text-gray-500">kg</span>
                 </div>
               ) : (
                 <div className="text-xl font-bold text-gray-500">-</div>
               )}
-              <div className="text-[9px] text-gray-400 uppercase">
-                Zmiana wagi
-              </div>
+              <div className="text-[9px] text-gray-400 uppercase">Zmiana wagi</div>
             </div>
           </div>
         </div>
       </div>
-
-      {Object.keys(summaryData.exerciseStats).length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-700/50 relative z-10">
-          <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-            {Object.entries(summaryData.exerciseStats).map(([name, count]) => (
-              <span
-                key={name}
-                className="px-2 py-1 bg-gray-900 rounded text-[10px] text-gray-300 border border-gray-700"
-              >
-                {name}: <b className="text-white">{count}</b>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
     </Card>
   );
 
   const renderWeeklyGoalsWidget = () => {
     const stats = calculateWeekStats(widgetDate);
-    const formatDate = (d) =>
-      new Date(d).toLocaleDateString('pl-PL', {
-        day: 'numeric',
-        month: 'short',
-      });
-    const rangeStr = `${formatDate(stats.range.start)} - ${formatDate(
-      stats.range.end
-    )}`;
-
-    const hasAnyWeeklyGoals =
-      exercisesList.some((ex) => goals.weekly[ex]) ||
-      cardioList.some(
-        (c) => goals.weekly[`${c}_km`] || goals.weekly[`${c}_time`]
-      );
+    const formatDate = (d) => new Date(d).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' });
+    const rangeStr = `${formatDate(stats.range.start)} - ${formatDate(stats.range.end)}`;
+    const hasAnyWeeklyGoals = exercisesList.some((ex) => goals.weekly[ex]) || cardioList.some((c) => goals.weekly[`${c}_km`] || goals.weekly[`${c}_time`]);
 
     return (
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 px-1 gap-4">
-          <h3 className="text-gray-900 font-bold flex items-center gap-2 text-lg">
-            <BarChart2 className="text-purple-600" /> Postęp Tygodniowy
+          <h3 className="text-gray-900 dark:text-gray-100 font-bold flex items-center gap-2 text-lg">
+            <BarChart2 className="text-purple-600 dark:text-purple-400" /> Postęp Tygodniowy
           </h3>
-          {/* Nowa nawigacja w stylu CustomDatePicker */}
-          <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
-            <button
-              onClick={() => shiftWidgetWeek(-1)}
-              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
-            >
-              <ChevronLeft size={18} />
-            </button>
+          <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm">
+            <button onClick={() => shiftWidgetWeek(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 transition-colors"><ChevronLeft size={18} /></button>
             <div className="flex flex-col px-4 text-center min-w-[140px]">
-              <span className="text-[9px] uppercase font-bold text-gray-400 leading-tight tracking-wider">
-                Zakres
-              </span>
+              <span className="text-[9px] uppercase font-bold text-gray-400 leading-tight tracking-wider">Zakres</span>
               <div className="flex items-center justify-center gap-2">
                 <Calendar size={12} className="text-blue-500" />
-                <span className="font-bold text-gray-800 text-sm">
-                  {rangeStr}
-                </span>
+                <span className="font-bold text-gray-800 dark:text-gray-200 text-sm">{rangeStr}</span>
               </div>
             </div>
-            <button
-              onClick={() => shiftWidgetWeek(1)}
-              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
-            >
-              <ChevronRight size={18} />
-            </button>
+            <button onClick={() => shiftWidgetWeek(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 transition-colors"><ChevronRight size={18} /></button>
           </div>
         </div>
 
         {!hasAnyWeeklyGoals ? (
-          <Card className="bg-purple-50 border-purple-100">
-            <div className="flex items-center gap-3 text-purple-800">
+          <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800">
+            <div className="flex items-center gap-3 text-purple-800 dark:text-purple-200">
               <AlertCircle />
               <div>
                 <h4 className="font-bold">Brak celów tygodniowych</h4>
-                <p className="text-sm text-purple-600">
-                  Przejdź do zakładki "Cele", aby ustalić tygodniowe limity i
-                  śledzić postęp.
-                </p>
+                <p className="text-sm text-purple-600 dark:text-purple-300">Przejdź do zakładki "Cele", aby ustalić tygodniowe limity i śledzić postęp.</p>
               </div>
             </div>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-              <h4 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
-                <Dumbbell size={14} /> Ćwiczenia (Suma)
-              </h4>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+              <h4 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2"><Dumbbell size={14} /> Ćwiczenia (Suma)</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {exercisesList.map((ex) => {
                   const current = stats.exercises[ex] || 0;
                   const target = getGoalTotal(goals.weekly[ex]);
                   if (!target) return null;
-
                   const isExceeded = current > target;
                   const isMet = current >= target;
-
-                  let cardClass = 'bg-white border-gray-200';
-                  if (isExceeded)
-                    cardClass = 'bg-red-50 border-red-500 shadow-red-100';
-                  else if (isMet)
-                    cardClass = 'bg-green-50 border-green-500 shadow-green-100';
+                  let cardClass = 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600';
+                  if (isExceeded) cardClass = 'bg-red-50 dark:bg-red-900/20 border-red-500 shadow-red-100';
+                  else if (isMet) cardClass = 'bg-green-50 dark:bg-green-900/20 border-green-500 shadow-green-100';
 
                   return (
-                    <div
-                      key={ex}
-                      className={`p-3 rounded-lg border flex flex-col justify-between transition-all hover:shadow-md ${cardClass}`}
-                    >
+                    <div key={ex} className={`p-3 rounded-lg border flex flex-col justify-between transition-all hover:shadow-md ${cardClass}`}>
                       <div className="flex justify-between items-start mb-2">
-                        <span
-                          className="text-xs font-bold text-gray-600 truncate w-full"
-                          title={ex}
-                        >
-                          {ex}
-                        </span>
-                        {isExceeded ? (
-                          <Flame
-                            size={14}
-                            className="text-red-500 fill-red-500 animate-pulse flex-shrink-0"
-                          />
-                        ) : isMet ? (
-                          <CheckCircle2
-                            size={14}
-                            className="text-green-600 flex-shrink-0"
-                          />
-                        ) : null}
+                        <span className="text-xs font-bold text-gray-600 dark:text-gray-300 truncate w-full" title={ex}>{ex}</span>
+                        {isExceeded ? <Flame size={14} className="text-red-500 fill-red-500 animate-pulse flex-shrink-0" /> : isMet ? <CheckCircle2 size={14} className="text-green-600 dark:text-green-400 flex-shrink-0" /> : null}
                       </div>
                       <div>
-                        <div className="text-xl font-bold text-gray-800 leading-none mb-1">
-                          {current}{' '}
-                          <span className="text-[10px] text-gray-400 font-normal">
-                            / {target}
-                          </span>
+                        <div className="text-xl font-bold text-gray-800 dark:text-gray-100 leading-none mb-1">
+                          {current} <span className="text-[10px] text-gray-400 font-normal">/ {target}</span>
                         </div>
-                        <div className="mt-2 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              isExceeded
-                                ? 'bg-red-500'
-                                : isMet
-                                ? 'bg-green-500'
-                                : 'bg-purple-500'
-                            }`}
-                            style={{
-                              width: `${Math.min(
-                                (current / target) * 100,
-                                100
-                              )}%`,
-                            }}
-                          ></div>
+                        <div className="mt-2 h-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${isExceeded ? 'bg-red-500' : isMet ? 'bg-green-500' : 'bg-purple-500'}`} style={{ width: `${Math.min((current / target) * 100, 100)}%` }}></div>
                         </div>
                       </div>
                     </div>
@@ -1298,119 +1064,41 @@ export default function WorkoutJournal() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-              <h4 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
-                <Activity size={14} /> Cardio
-              </h4>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
+              <h4 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2"><Activity size={14} /> Cardio</h4>
               <div className="space-y-3">
                 {cardioList.map((type) => {
                   const currentKm = stats.cardio[type]?.km || 0;
                   const targetKm = goals.weekly[`${type}_km`];
                   const currentTime = stats.cardio[type]?.time || 0;
                   const targetTime = goals.weekly[`${type}_time`];
-
                   if (!targetKm && !targetTime) return null;
-
-                  const isKmMet = targetKm && currentKm >= targetKm;
                   const isKmExceeded = targetKm && currentKm > targetKm;
-                  const isTimeMet = targetTime && currentTime >= targetTime;
                   const isTimeExceeded = targetTime && currentTime > targetTime;
 
-                  let cardClass = 'bg-white border-gray-200';
-                  if (isKmExceeded || isTimeExceeded)
-                    cardClass = 'bg-red-50 border-red-500 shadow-red-100';
-                  else if (isKmMet || isTimeMet)
-                    cardClass = 'bg-green-50 border-green-500 shadow-green-100';
-
                   return (
-                    <div
-                      key={type}
-                      className={`p-3 rounded-lg border ${cardClass}`}
-                    >
+                    <div key={type} className={`p-3 rounded-lg border bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600`}>
                       <div className="flex justify-between items-center mb-2">
-                        <div className="text-sm font-bold text-gray-800">
-                          {type}
-                        </div>
-                        {isKmExceeded || isTimeExceeded ? (
-                          <Flame
-                            size={14}
-                            className="text-red-500 fill-red-500 animate-pulse"
-                          />
-                        ) : null}
+                        <div className="text-sm font-bold text-gray-800 dark:text-gray-200">{type}</div>
+                        {isKmExceeded || isTimeExceeded ? <Flame size={14} className="text-red-500 fill-red-500 animate-pulse" /> : null}
                       </div>
                       <div className="flex gap-4">
                         {targetKm && (
                           <div className="flex-1">
-                            <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                              <span className="flex items-center gap-1">
-                                <MapPin size={10} /> Dystans
-                              </span>
-                              <span
-                                className={
-                                  isKmExceeded
-                                    ? 'text-red-600 font-bold'
-                                    : isKmMet
-                                    ? 'text-green-600 font-bold'
-                                    : ''
-                                }
-                              >
-                                {currentKm} / {targetKm} km
-                              </span>
+                            <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mb-1">
+                              <span className="flex items-center gap-1"><MapPin size={10} /> Dystans</span>
+                              <span className={isKmExceeded ? 'text-red-600 font-bold' : ''}>{currentKm} / {targetKm} km</span>
                             </div>
-                            <div className="w-full bg-gray-200 h-1.5 rounded-full">
-                              <div
-                                className={`h-1.5 rounded-full ${
-                                  isKmExceeded
-                                    ? 'bg-red-500'
-                                    : isKmMet
-                                    ? 'bg-green-500'
-                                    : 'bg-teal-500'
-                                }`}
-                                style={{
-                                  width: `${Math.min(
-                                    (currentKm / targetKm) * 100,
-                                    100
-                                  )}%`,
-                                }}
-                              ></div>
-                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full"><div className={`h-1.5 rounded-full ${isKmExceeded ? 'bg-red-500' : 'bg-teal-500'}`} style={{ width: `${Math.min((currentKm / targetKm) * 100, 100)}%` }}></div></div>
                           </div>
                         )}
                         {targetTime && (
                           <div className="flex-1">
-                            <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                              <span className="flex items-center gap-1">
-                                <Clock size={10} /> Czas
-                              </span>
-                              <span
-                                className={
-                                  isTimeExceeded
-                                    ? 'text-red-600 font-bold'
-                                    : isTimeMet
-                                    ? 'text-green-600 font-bold'
-                                    : ''
-                                }
-                              >
-                                {currentTime} / {targetTime} min
-                              </span>
+                            <div className="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mb-1">
+                              <span className="flex items-center gap-1"><Clock size={10} /> Czas</span>
+                              <span className={isTimeExceeded ? 'text-red-600 font-bold' : ''}>{currentTime} / {targetTime} min</span>
                             </div>
-                            <div className="w-full bg-gray-200 h-1.5 rounded-full">
-                              <div
-                                className={`h-1.5 rounded-full ${
-                                  isTimeExceeded
-                                    ? 'bg-red-500'
-                                    : isTimeMet
-                                    ? 'bg-green-500'
-                                    : 'bg-blue-500'
-                                }`}
-                                style={{
-                                  width: `${Math.min(
-                                    (currentTime / targetTime) * 100,
-                                    100
-                                  )}%`,
-                                }}
-                              ></div>
-                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full"><div className={`h-1.5 rounded-full ${isTimeExceeded ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${Math.min((currentTime / targetTime) * 100, 100)}%` }}></div></div>
                           </div>
                         )}
                       </div>
@@ -1427,11 +1115,6 @@ export default function WorkoutJournal() {
 
   const renderDayView = () => (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* 
-         ZMIANA: Usunięto zdublowany Date Picker z tego miejsca. 
-         Główny Date Picker znajduje się teraz pod nagłówkiem (Header).
-      */}
-
       {renderSummaryCard()}
       {renderWeeklyGoalsWidget()}
 
@@ -1439,219 +1122,88 @@ export default function WorkoutJournal() {
         <div className="space-y-6">
           <Card>
             <Label>
-              <Dumbbell size={18} className="text-purple-500" /> Zarządzaj
-              typami
+              <Dumbbell size={18} className="text-purple-500" /> Zarządzaj typami
             </Label>
             <div className="mb-4">
-              <span className="text-xs font-bold text-gray-500 uppercase block mb-2">
-                Ćwiczenia
-              </span>
+              <span className="text-xs font-bold text-gray-500 uppercase block mb-2">Ćwiczenia i Grupy</span>
               <div className="flex flex-wrap gap-2 mb-2">
                 {exercisesList.map((ex) => (
-                  <div
-                    key={ex}
-                    className="flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs border border-purple-100"
-                  >
+                  <div key={ex} className="flex items-center gap-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-1 rounded text-xs border border-purple-100 dark:border-purple-800">
+                    <span className="opacity-50 mr-1 text-[10px] uppercase">
+                      {getExerciseGroup(ex).substring(0,3)}
+                    </span>
                     {ex}
-                    <button
-                      onClick={() =>
-                        removeType(exercisesList, setExercisesList, ex)
-                      }
-                      className="hover:text-red-500 ml-1"
-                    >
-                      <Trash2 size={12} />
-                    </button>
+                    <button onClick={() => removeType(exercisesList, setExercisesList, ex)} className="hover:text-red-500 ml-1"><Trash2 size={12} /></button>
                   </div>
                 ))}
               </div>
               <div className="flex gap-2">
-                <Input
-                  placeholder="Dodaj np. Pompki"
-                  value={newExerciseName}
-                  onChange={(e) => setNewExerciseName(e.target.value)}
-                />
-                <Button
-                  onClick={() =>
-                    addToList(
-                      exercisesList,
-                      setExercisesList,
-                      newExerciseName,
-                      setNewExerciseName
-                    )
-                  }
-                  size="icon"
-                >
-                  <Plus size={16} />
-                </Button>
+                <div className="flex-1">
+                  <Input placeholder="Nazwa ćwiczenia..." value={newExerciseName} onChange={(e) => setNewExerciseName(e.target.value)} className="mb-2" />
+                  <select 
+                    value={newExerciseGroup} 
+                    onChange={(e) => setNewExerciseGroup(e.target.value)}
+                    className="w-full text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none"
+                  >
+                    {availableGroups.map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <Button onClick={addExerciseToList} size="icon" className="h-full"><Plus size={16} /></Button>
               </div>
             </div>
             <div>
-              <span className="text-xs font-bold text-gray-500 uppercase block mb-2">
-                Cardio
-              </span>
+              <span className="text-xs font-bold text-gray-500 uppercase block mb-2">Cardio</span>
               <div className="flex flex-wrap gap-2 mb-2">
                 {cardioList.map((c) => (
-                  <div
-                    key={c}
-                    className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs border border-blue-100"
-                  >
+                  <div key={c} className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs border border-blue-100 dark:border-blue-800">
                     {c}
-                    <button
-                      onClick={() => removeType(cardioList, setCardioList, c)}
-                      className="hover:text-red-500 ml-1"
-                    >
-                      <Trash2 size={12} />
-                    </button>
+                    <button onClick={() => removeType(cardioList, setCardioList, c)} className="hover:text-red-500 ml-1"><Trash2 size={12} /></button>
                   </div>
                 ))}
               </div>
               <div className="flex gap-2">
-                <Input
-                  placeholder="Dodaj np. Rower"
-                  value={newCardioName}
-                  onChange={(e) => setNewCardioName(e.target.value)}
-                />
-                <Button
-                  onClick={() =>
-                    addToList(
-                      cardioList,
-                      setCardioList,
-                      newCardioName,
-                      setNewCardioName
-                    )
-                  }
-                  size="icon"
-                >
-                  <Plus size={16} />
-                </Button>
+                <Input placeholder="Dodaj np. Rower" value={newCardioName} onChange={(e) => setNewCardioName(e.target.value)} />
+                <Button onClick={addCardioToList} size="icon"><Plus size={16} /></Button>
               </div>
             </div>
           </Card>
 
           <Card>
-            <Label>
-              <Weight size={18} className="text-orange-500" /> Waga i Pomiary
-            </Label>
+            <Label><Weight size={18} className="text-orange-500" /> Waga i Pomiary</Label>
             <div className="space-y-4">
-              <SmartField
-                value={currentLog.weight}
-                onChange={(v) => updateLogData({ type: 'weight' }, v)}
-                unit="kg"
-                label="Masa ciała"
-              />
+              <SmartField value={currentLog.weight} onChange={(v) => updateLogData({ type: 'weight' }, v)} unit="kg" label="Masa ciała" />
               <div className="grid grid-cols-2 gap-3">
-                <SmartField
-                  value={currentLog.measurements?.chest}
-                  onChange={(v) =>
-                    updateLogData({ type: 'measure', name: 'chest' }, v)
-                  }
-                  unit="cm"
-                  label="Klatka"
-                />
-                <SmartField
-                  value={currentLog.measurements?.waist}
-                  onChange={(v) =>
-                    updateLogData({ type: 'measure', name: 'waist' }, v)
-                  }
-                  unit="cm"
-                  label="Pas"
-                />
-                <SmartField
-                  value={currentLog.measurements?.bicep}
-                  onChange={(v) =>
-                    updateLogData({ type: 'measure', name: 'bicep' }, v)
-                  }
-                  unit="cm"
-                  label="Biceps"
-                />
-                <SmartField
-                  value={currentLog.measurements?.thigh}
-                  onChange={(v) =>
-                    updateLogData({ type: 'measure', name: 'thigh' }, v)
-                  }
-                  unit="cm"
-                  label="Udo"
-                />
+                <SmartField value={currentLog.measurements?.chest} onChange={(v) => updateLogData({ type: 'measure', name: 'chest' }, v)} unit="cm" label="Klatka" />
+                <SmartField value={currentLog.measurements?.waist} onChange={(v) => updateLogData({ type: 'measure', name: 'waist' }, v)} unit="cm" label="Pas" />
+                <SmartField value={currentLog.measurements?.bicep} onChange={(v) => updateLogData({ type: 'measure', name: 'bicep' }, v)} unit="cm" label="Biceps" />
+                <SmartField value={currentLog.measurements?.thigh} onChange={(v) => updateLogData({ type: 'measure', name: 'thigh' }, v)} unit="cm" label="Udo" />
               </div>
             </div>
           </Card>
         </div>
 
         <Card>
-          <Label>
-            <Activity size={18} className="text-blue-500" /> Cardio
-          </Label>
+          <Label><Activity size={18} className="text-blue-500" /> Cardio</Label>
           <div className="space-y-6">
             {cardioList.map((type) => {
               const data = currentLog.cardio?.[type] || {};
               const goalTime = goals.daily[`${type}_time`];
               const goalKm = goals.daily[`${type}_km`];
-
               return (
-                <div
-                  key={type}
-                  className="bg-white rounded-lg border border-gray-100 p-3 shadow-sm"
-                >
+                <div key={type} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 p-3 shadow-sm">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold text-gray-800">{type}</span>
+                    <span className="font-bold text-gray-800 dark:text-gray-200">{type}</span>
                     <div className="flex gap-1">
-                      {goalTime && (
-                        <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                          Cel: {goalTime} min
-                        </span>
-                      )}
-                      {goalKm && (
-                        <span className="text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded">
-                          Cel: {goalKm} km
-                        </span>
-                      )}
+                      {goalTime && <span className="text-[10px] text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded">Cel: {goalTime} min</span>}
+                      {goalKm && <span className="text-[10px] text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-900/40 px-2 py-0.5 rounded">Cel: {goalKm} km</span>}
                     </div>
                   </div>
-                  {/* PASKI Z PRZENIESIONYM PŁOMIENIEM */}
-                  <ProgressBar
-                    current={data.time || 0}
-                    target={goalTime}
-                    unit="min"
-                    label="Czas"
-                  />
-                  <ProgressBar
-                    current={data.km || 0}
-                    target={goalKm}
-                    unit="km"
-                    label="Dystans"
-                  />
-
+                  <ProgressBar current={data.time || 0} target={goalTime} unit="min" label="Czas" />
+                  <ProgressBar current={data.km || 0} target={goalKm} unit="km" label="Dystans" />
                   <div className="grid grid-cols-3 gap-2 mt-3">
-                    <SmartField
-                      label="KM"
-                      value={data.km}
-                      onChange={(v) =>
-                        updateLogData(
-                          { type: 'cardio', name: type, field: 'km' },
-                          v
-                        )
-                      }
-                    />
-                    <SmartField
-                      label="KCAL"
-                      value={data.kcal}
-                      onChange={(v) =>
-                        updateLogData(
-                          { type: 'cardio', name: type, field: 'kcal' },
-                          v
-                        )
-                      }
-                    />
-                    <SmartField
-                      label="MIN"
-                      value={data.time}
-                      onChange={(v) =>
-                        updateLogData(
-                          { type: 'cardio', name: type, field: 'time' },
-                          v
-                        )
-                      }
-                    />
+                    <SmartField label="KM" value={data.km} onChange={(v) => updateLogData({ type: 'cardio', name: type, field: 'km' }, v)} />
+                    <SmartField label="KCAL" value={data.kcal} onChange={(v) => updateLogData({ type: 'cardio', name: type, field: 'kcal' }, v)} />
+                    <SmartField label="MIN" value={data.time} onChange={(v) => updateLogData({ type: 'cardio', name: type, field: 'time' }, v)} />
                   </div>
                 </div>
               );
@@ -1661,54 +1213,49 @@ export default function WorkoutJournal() {
       </div>
 
       <Card>
-        <Label>
-          <Dumbbell size={18} className="text-yellow-600" /> Ćwiczenia Siłowe
-        </Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {exercisesList.map((ex) => {
-            const goalObj = goals.daily[ex];
-            const goalTotal = getGoalTotal(goalObj);
-
-            const val = currentLog.exercises?.[ex];
-            const currentTotal = getTotalReps(val);
-
-            return (
-              <div
-                key={ex}
-                className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm relative"
-              >
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-bold text-gray-700 text-sm truncate pr-2">
-                    {ex}
-                  </span>
-                  {goalTotal > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-gray-100 text-gray-500">
-                      Cel:{' '}
-                      {typeof goalObj === 'object'
-                        ? `${goalObj.sets}x${goalObj.reps}`
-                        : goalTotal}
-                    </span>
-                  )}
-                </div>
-
-                {/* Pasek Postępu Całkowitego */}
-                <ProgressBar
-                  current={currentTotal}
-                  target={goalTotal}
-                  unit="powt."
-                  label="Postęp dzienny"
-                  colorClass="bg-yellow-500"
-                />
-
-                <ExerciseSetLogger
-                  value={val}
-                  goal={goalObj}
-                  onChange={(v) => updateLogData({ type: 'ex', name: ex }, v)}
-                />
-              </div>
-            );
-          })}
+        <div className="flex justify-between items-center mb-4">
+          <Label><Dumbbell size={18} className="text-yellow-600" /> Ćwiczenia Siłowe</Label>
+          <span className="text-xs text-gray-400 font-normal italic">Pogrupowane wg partii</span>
         </div>
+        
+        {/* GRUPOWANIE ĆWICZEŃ W WIDOKU */}
+        {Object.entries(
+          exercisesList.reduce((acc, ex) => {
+            const grp = getExerciseGroup(ex);
+            if (!acc[grp]) acc[grp] = [];
+            acc[grp].push(ex);
+            return acc;
+          }, {})
+        ).map(([groupName, groupExercises]) => (
+          <div key={groupName} className="mb-6 last:mb-0">
+            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-1">
+              <Layers size={12} /> {groupName}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {groupExercises.map((ex) => {
+                const goalObj = goals.daily[ex];
+                const goalTotal = getGoalTotal(goalObj);
+                const val = currentLog.exercises?.[ex];
+                const currentTotal = getTotalReps(val);
+
+                return (
+                  <div key={ex} className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm relative">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-bold text-gray-700 dark:text-gray-200 text-sm truncate pr-2">{ex}</span>
+                      {goalTotal > 0 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                          Cel: {typeof goalObj === 'object' ? `${goalObj.sets}x${goalObj.reps}` : goalTotal}
+                        </span>
+                      )}
+                    </div>
+                    <ProgressBar current={currentTotal} target={goalTotal} unit="powt." label="Postęp dzienny" colorClass="bg-yellow-500" />
+                    <ExerciseSetLogger value={val} goal={goalObj} onChange={(v) => updateLogData({ type: 'ex', name: ex }, v)} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </Card>
     </div>
   );
@@ -1716,81 +1263,35 @@ export default function WorkoutJournal() {
   const renderGoalsView = () => (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-2">
-          <Target className="text-blue-300" /> Ustalanie Celów
-        </h2>
-        <p className="text-blue-100 opacity-90 max-w-2xl">
-          Definiuj swoje limity. Możesz ustawić cel jako ilość serii i powtórzeń
-          (np. 3 serie po 15 powt.).
-        </p>
+        <h2 className="text-2xl font-bold flex items-center gap-2 mb-2"><Target className="text-blue-300" /> Ustalanie Celów</h2>
+        <p className="text-blue-100 opacity-90 max-w-2xl">Definiuj swoje limity. Możesz ustawić cel jako ilość serii i powtórzeń (np. 3 serie po 15 powt.).</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 p-4">
-            <h3 className="font-bold text-gray-800 flex items-center gap-2">
-              <Activity size={18} className="text-green-500" /> Cele Dzienne
-            </h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 p-4">
+            <h3 className="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><Activity size={18} className="text-green-500" /> Cele Dzienne</h3>
           </div>
           <div className="p-6 space-y-6">
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">
-                Siłowe (Serie x Powt.)
-              </h4>
+              <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Siłowe (Serie x Powt.)</h4>
               <div className="grid grid-cols-1 gap-4">
                 {exercisesList.map((ex) => {
                   const g = goals.daily[ex] || {};
                   const s = typeof g === 'object' ? g.sets : '';
                   const r = typeof g === 'object' ? g.reps : g;
                   return (
-                    <div
-                      key={ex}
-                      className="flex items-center justify-between bg-gray-50 rounded-lg p-2 border border-gray-100"
-                    >
-                      <span className="text-sm font-medium text-gray-700 ml-2 w-32 truncate">
-                        {ex}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-gray-400 font-bold uppercase">
-                            S:
-                          </span>
-                          <input
-                            type="number"
-                            className="w-16 border border-gray-300 rounded-md px-2 py-1 text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={s}
-                            onChange={(e) =>
-                              setGoals((p) => ({
-                                ...p,
-                                daily: {
-                                  ...p.daily,
-                                  [ex]: { sets: e.target.value, reps: r || 0 },
-                                },
-                              }))
-                            }
-                            placeholder="Serie"
-                          />
+                    <div key={ex} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2 border border-gray-100 dark:border-gray-700">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-2 w-32 truncate">{ex}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col items-center">
+                           <span className="text-[9px] text-gray-400 font-bold uppercase mb-0.5">Serie</span>
+                           <input type="number" className="w-16 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md px-2 py-1 text-center text-sm" value={s} onChange={(e) => setGoals((p) => ({ ...p, daily: { ...p.daily, [ex]: { sets: e.target.value, reps: r || 0 }, }, }))} />
                         </div>
-                        <div className="text-gray-400">x</div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-gray-400 font-bold uppercase">
-                            P:
-                          </span>
-                          <input
-                            type="number"
-                            className="w-16 border border-gray-300 rounded-md px-2 py-1 text-center text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={r}
-                            onChange={(e) =>
-                              setGoals((p) => ({
-                                ...p,
-                                daily: {
-                                  ...p.daily,
-                                  [ex]: { sets: s || 0, reps: e.target.value },
-                                },
-                              }))
-                            }
-                            placeholder="Powt."
-                          />
+                        <div className="text-gray-400 pt-3">x</div>
+                        <div className="flex flex-col items-center">
+                           <span className="text-[9px] text-gray-400 font-bold uppercase mb-0.5">Powt.</span>
+                           <input type="number" className="w-16 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md px-2 py-1 text-center text-sm" value={r} onChange={(e) => setGoals((p) => ({ ...p, daily: { ...p.daily, [ex]: { sets: s || 0, reps: e.target.value }, }, }))} />
                         </div>
                       </div>
                     </div>
@@ -1799,50 +1300,21 @@ export default function WorkoutJournal() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100">
-              <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">
-                Cardio
-              </h4>
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+              <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Cardio</h4>
               <div className="grid grid-cols-1 gap-4">
                 {cardioList.map((type) => (
-                  <div
-                    key={type}
-                    className="flex items-center justify-between bg-blue-50 rounded-lg p-2 border border-blue-100"
-                  >
-                    <span className="text-sm font-medium text-blue-900 ml-2 w-24">
-                      {type}
-                    </span>
+                  <div key={type} className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 border border-blue-100 dark:border-blue-800">
+                    <span className="text-sm font-medium text-blue-900 dark:text-blue-300 ml-2 w-24">{type}</span>
                     <div className="flex gap-2">
-                      <input
-                        type="number"
-                        className="w-20 border border-blue-200 rounded-md px-2 py-1 text-center text-sm"
-                        value={goals.daily[`${type}_time`] || ''}
-                        onChange={(e) =>
-                          setGoals((p) => ({
-                            ...p,
-                            daily: {
-                              ...p.daily,
-                              [`${type}_time`]: e.target.value,
-                            },
-                          }))
-                        }
-                        placeholder="min"
-                      />
-                      <input
-                        type="number"
-                        className="w-20 border border-blue-200 rounded-md px-2 py-1 text-center text-sm"
-                        value={goals.daily[`${type}_km`] || ''}
-                        onChange={(e) =>
-                          setGoals((p) => ({
-                            ...p,
-                            daily: {
-                              ...p.daily,
-                              [`${type}_km`]: e.target.value,
-                            },
-                          }))
-                        }
-                        placeholder="km"
-                      />
+                       <div className="flex flex-col items-center">
+                         <span className="text-[9px] text-blue-400 font-bold uppercase mb-0.5">Min</span>
+                         <input type="number" className="w-20 border border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-800 rounded-md px-2 py-1 text-center text-sm" value={goals.daily[`${type}_time`] || ''} onChange={(e) => setGoals((p) => ({ ...p, daily: { ...p.daily, [`${type}_time`]: e.target.value, }, }))} />
+                       </div>
+                       <div className="flex flex-col items-center">
+                         <span className="text-[9px] text-green-500 font-bold uppercase mb-0.5">Km</span>
+                         <input type="number" className="w-20 border border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-800 rounded-md px-2 py-1 text-center text-sm" value={goals.daily[`${type}_km`] || ''} onChange={(e) => setGoals((p) => ({ ...p, daily: { ...p.daily, [`${type}_km`]: e.target.value, }, }))} />
+                       </div>
                     </div>
                   </div>
                 ))}
@@ -1851,88 +1323,41 @@ export default function WorkoutJournal() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 p-4">
-            <h3 className="font-bold text-gray-800 flex items-center gap-2">
-              <Calendar size={18} className="text-purple-500" /> Cele Tygodniowe
-              (Suma)
-            </h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 p-4">
+            <h3 className="font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2"><Calendar size={18} className="text-purple-500" /> Cele Tygodniowe (Suma)</h3>
           </div>
           <div className="p-6 space-y-6">
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">
-                Siłowe (Total Powtórzeń)
-              </h4>
+              <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Siłowe (Total Powtórzeń)</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {exercisesList.map((ex) => (
-                  <div
-                    key={ex}
-                    className="flex items-center justify-between bg-gray-50 rounded-lg p-2 border border-gray-100"
-                  >
-                    <span className="text-sm font-medium text-gray-700 ml-2">
-                      {ex}
-                    </span>
-                    <input
-                      type="number"
-                      className="w-20 border border-gray-300 rounded-md px-2 py-1 text-center text-sm focus:ring-2 focus:ring-purple-500 outline-none"
-                      value={goals.weekly[ex] || ''}
-                      onChange={(e) =>
-                        setGoals((p) => ({
-                          ...p,
-                          weekly: { ...p.weekly, [ex]: e.target.value },
-                        }))
-                      }
-                      placeholder="Total"
-                    />
+                  <div key={ex} className="flex flex-col justify-between bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3 border border-gray-100 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{ex}</span>
+                    <div className="flex items-center gap-2">
+                         <span className="text-[10px] text-gray-400 font-bold uppercase">Cel:</span>
+                         <input type="number" className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-md px-2 py-1 text-center text-sm" value={goals.weekly[ex] || ''} onChange={(e) => setGoals((p) => ({ ...p, weekly: { ...p.weekly, [ex]: e.target.value }, }))} />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100">
-              <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">
-                Cardio
-              </h4>
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+              <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Cardio</h4>
               <div className="grid grid-cols-1 gap-4">
                 {cardioList.map((type) => (
-                  <div
-                    key={type}
-                    className="flex items-center justify-between bg-purple-50 rounded-lg p-2 border border-purple-100"
-                  >
-                    <span className="text-sm font-medium text-purple-900 ml-2 w-24">
-                      {type}
-                    </span>
+                  <div key={type} className="flex items-center justify-between bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 border border-purple-100 dark:border-purple-800">
+                    <span className="text-sm font-medium text-purple-900 dark:text-purple-300 ml-2 w-24">{type}</span>
                     <div className="flex gap-2">
-                      <input
-                        type="number"
-                        className="w-20 border border-purple-200 rounded-md px-2 py-1 text-center text-sm"
-                        value={goals.weekly[`${type}_time`] || ''}
-                        onChange={(e) =>
-                          setGoals((p) => ({
-                            ...p,
-                            weekly: {
-                              ...p.weekly,
-                              [`${type}_time`]: e.target.value,
-                            },
-                          }))
-                        }
-                        placeholder="min"
-                      />
-                      <input
-                        type="number"
-                        className="w-20 border border-purple-200 rounded-md px-2 py-1 text-center text-sm"
-                        value={goals.weekly[`${type}_km`] || ''}
-                        onChange={(e) =>
-                          setGoals((p) => ({
-                            ...p,
-                            weekly: {
-                              ...p.weekly,
-                              [`${type}_km`]: e.target.value,
-                            },
-                          }))
-                        }
-                        placeholder="km"
-                      />
+                       <div className="flex flex-col items-center">
+                         <span className="text-[9px] text-purple-400 font-bold uppercase mb-0.5">Min</span>
+                         <input type="number" className="w-20 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-md px-2 py-1 text-center text-sm" value={goals.weekly[`${type}_time`] || ''} onChange={(e) => setGoals((p) => ({ ...p, weekly: { ...p.weekly, [`${type}_time`]: e.target.value, }, }))} />
+                       </div>
+                       <div className="flex flex-col items-center">
+                         <span className="text-[9px] text-purple-400 font-bold uppercase mb-0.5">Km</span>
+                         <input type="number" className="w-20 border border-purple-200 dark:border-purple-800 bg-white dark:bg-gray-800 rounded-md px-2 py-1 text-center text-sm" value={goals.weekly[`${type}_km`] || ''} onChange={(e) => setGoals((p) => ({ ...p, weekly: { ...p.weekly, [`${type}_km`]: e.target.value, }, }))} />
+                       </div>
                     </div>
                   </div>
                 ))}
@@ -1946,94 +1371,30 @@ export default function WorkoutJournal() {
 
   const renderChartsView = () => (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-gray-700 font-bold text-sm">
+      <div className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-bold text-sm">
           <Filter size={16} />
           <span>Zakres:</span>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <CustomDatePicker
-            value={dateRange.start}
-            onChange={(e) =>
-              setDateRange({ ...dateRange, start: e.target.value })
-            }
-            label="Od"
-            className="flex-1 sm:flex-none"
-          />
+          <CustomDatePicker value={dateRange.start} onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })} label="Od" className="flex-1 sm:flex-none" />
           <ArrowRight size={16} className="text-gray-300 hidden sm:block" />
-          <CustomDatePicker
-            value={dateRange.end}
-            onChange={(e) =>
-              setDateRange({ ...dateRange, end: e.target.value })
-            }
-            label="Do"
-            className="flex-1 sm:flex-none"
-          />
+          <CustomDatePicker value={dateRange.end} onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })} label="Do" className="flex-1 sm:flex-none" />
         </div>
       </div>
-
-      {/* REKORDY */}
-      {Object.keys(personalRecords).length > 0 && (
-        <Card className="bg-yellow-50 border-yellow-200 mb-6">
-          <h3 className="font-bold text-yellow-800 flex items-center gap-2 mb-4">
-            <Trophy size={18} /> Personalne Rekordy (Max w serii)
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {Object.entries(personalRecords).map(([name, rec]) => (
-              <div
-                key={name}
-                className="bg-white p-3 rounded-lg border border-yellow-100 shadow-sm"
-              >
-                <div className="text-xs font-bold text-gray-500 uppercase">
-                  {name}
-                </div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {rec.maxReps}{' '}
-                  <span className="text-xs font-normal text-gray-400">
-                    powt.
-                  </span>
-                </div>
-                <div className="text-[10px] text-gray-400">{rec.date}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       <Card>
         <Label>Wykres ćwiczeń (Powtórzenia)</Label>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#e5e7eb"
-              />
-              <XAxis
-                dataKey="date"
-                stroke="#9ca3af"
-                tick={{ fontSize: 10 }}
-                tickFormatter={(val) => val.slice(5)}
-              />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#374151' : '#e5e7eb'} />
+              <XAxis dataKey="date" stroke="#9ca3af" tick={{ fontSize: 10 }} tickFormatter={(val) => val.slice(5)} />
               <YAxis stroke="#9ca3af" tick={{ fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: '8px',
-                  border: 'none',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                }}
-              />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: isDarkMode ? '#1f2937' : '#fff', color: isDarkMode ? '#fff' : '#000' }} />
               <Legend />
               {exercisesList.map((ex, idx) => (
-                <Line
-                  key={ex}
-                  type="monotone"
-                  dataKey={ex}
-                  stroke={`hsl(${idx * 137.5}, 70%, 50%)`}
-                  strokeWidth={2}
-                  dot={false}
-                />
+                <Line key={ex} type="monotone" dataKey={ex} stroke={`hsl(${idx * 137.5}, 70%, 50%)`} strokeWidth={2} dot={false} />
               ))}
             </LineChart>
           </ResponsiveContainer>
@@ -2045,56 +1406,14 @@ export default function WorkoutJournal() {
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#e5e7eb"
-              />
-              <XAxis
-                dataKey="date"
-                stroke="#9ca3af"
-                tick={{ fontSize: 10 }}
-                tickFormatter={(val) => val.slice(5)}
-              />
-              <YAxis
-                yAxisId="left"
-                stroke="#10b981"
-                tick={{ fontSize: 12 }}
-                label={{ value: 'km', angle: -90, position: 'insideLeft' }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                stroke="#3b82f6"
-                tick={{ fontSize: 12 }}
-                label={{ value: 'min', angle: 90, position: 'insideRight' }}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: '8px',
-                  border: 'none',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                }}
-              />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#374151' : '#e5e7eb'} />
+              <XAxis dataKey="date" stroke="#9ca3af" tick={{ fontSize: 10 }} tickFormatter={(val) => val.slice(5)} />
+              <YAxis yAxisId="left" stroke="#10b981" tick={{ fontSize: 12 }} label={{ value: 'km', angle: -90, position: 'insideLeft' }} />
+              <YAxis yAxisId="right" orientation="right" stroke="#3b82f6" tick={{ fontSize: 12 }} label={{ value: 'min', angle: 90, position: 'insideRight' }} />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: isDarkMode ? '#1f2937' : '#fff', color: isDarkMode ? '#fff' : '#000' }} />
               <Legend />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="cardioKm"
-                name="Dystans (km)"
-                stroke="#10b981"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="cardioTime"
-                name="Czas (min)"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-              />
+              <Line yAxisId="left" type="monotone" dataKey="cardioKm" name="Dystans (km)" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
+              <Line yAxisId="right" type="monotone" dataKey="cardioTime" name="Czas (min)" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -2105,25 +1424,11 @@ export default function WorkoutJournal() {
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#e5e7eb"
-              />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#374151' : '#e5e7eb'} />
               <XAxis dataKey="date" stroke="#9ca3af" tick={{ fontSize: 10 }} />
-              <YAxis
-                domain={['auto', 'auto']}
-                stroke="#9ca3af"
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="weight"
-                stroke="#8b5cf6"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-              />
+              <YAxis domain={['auto', 'auto']} stroke="#9ca3af" tick={{ fontSize: 12 }} />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: isDarkMode ? '#1f2937' : '#fff', color: isDarkMode ? '#fff' : '#000' }} />
+              <Line type="monotone" dataKey="weight" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -2134,56 +1439,14 @@ export default function WorkoutJournal() {
   const renderHistoryView = () => (
     <div className="space-y-6 animate-in fade-in duration-300">
       <ActivityHeatmap logs={logs} goals={goals} />
-
-      <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-gray-700 font-bold text-sm">
-          <Filter size={16} />
-          <span>Zakres:</span>
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <CustomDatePicker
-            value={dateRange.start}
-            onChange={(e) =>
-              setDateRange({ ...dateRange, start: e.target.value })
-            }
-            label="Od"
-            className="flex-1 sm:flex-none"
-          />
-          <ArrowRight size={16} className="text-gray-300 hidden sm:block" />
-          <CustomDatePicker
-            value={dateRange.end}
-            onChange={(e) =>
-              setDateRange({ ...dateRange, end: e.target.value })
-            }
-            label="Do"
-            className="flex-1 sm:flex-none"
-          />
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 gap-4">
-        {chartData
-          .filter(
-            (d) =>
-              d.weight ||
-              d.cardioTime > 0 ||
-              Object.keys(d).some((k) => exercisesList.includes(k) && d[k])
-          )
+        {chartData.filter((d) => d.weight || d.cardioTime > 0 || Object.keys(d).some((k) => exercisesList.includes(k) && d[k]))
           .sort((a, b) => b.date.localeCompare(a.date))
           .map((log) => (
-            <Card
-              key={log.date}
-              className="flex flex-col md:flex-row gap-4 items-center"
-            >
-              <div className="bg-gray-100 rounded-lg p-3 text-center min-w-[100px]">
-                <div className="text-lg font-bold text-gray-800">
-                  {log.date}
-                </div>
-                {log.weight && (
-                  <div className="text-purple-600 font-bold text-sm">
-                    {log.weight} kg
-                  </div>
-                )}
+            <Card key={log.date} className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-center min-w-[100px]">
+                <div className="text-lg font-bold text-gray-800 dark:text-gray-100">{log.date}</div>
+                {log.weight && <div className="text-purple-600 dark:text-purple-400 font-bold text-sm">{log.weight} kg</div>}
               </div>
               <div className="flex-1 w-full grid grid-cols-2 gap-4">
                 <div>
@@ -2192,103 +1455,43 @@ export default function WorkoutJournal() {
                     const current = getTotalReps(rawData);
                     const goal = goals.daily[ex];
                     const goalTotal = getGoalTotal(goal);
-
                     let detailStr = formatHistoryString(rawData);
-
                     if (!rawData) return null;
-
                     const isExceeded = goalTotal > 0 && current > goalTotal;
 
                     return (
-                      <div
-                        key={ex}
-                        className="flex justify-between items-end text-sm border-b border-gray-100 last:border-0 py-2"
-                      >
-                        <div className="text-gray-600 font-medium flex items-center gap-1">
+                      <div key={ex} className="flex justify-between items-end text-sm border-b border-gray-100 dark:border-gray-700 last:border-0 py-2">
+                        <div className="text-gray-600 dark:text-gray-300 font-medium flex items-center gap-1">
                           {ex}
-                          {isExceeded && (
-                            <Flame
-                              size={12}
-                              className="text-red-500 fill-red-500 animate-pulse"
-                            />
-                          )}
+                          {isExceeded && <Flame size={12} className="text-red-500 fill-red-500 animate-pulse" />}
                         </div>
                         <div className="text-right w-1/2">
-                          <span className="font-bold block">
-                            {current}{' '}
-                            <span className="text-[10px] text-gray-400 font-normal">
-                              total
-                            </span>
-                          </span>
-                          {/* PASEK W HISTORII */}
-                          <ProgressBar
-                            current={current}
-                            target={goalTotal}
-                            unit=""
-                            size="sm"
-                          />
-                          {detailStr && (
-                            <span className="text-[10px] text-gray-400 block mt-1">
-                              {detailStr}
-                            </span>
-                          )}
+                          <span className="font-bold block text-gray-900 dark:text-gray-100">{current} <span className="text-[10px] text-gray-400 font-normal">total</span></span>
+                          <ProgressBar current={current} target={goalTotal} unit="" size="sm" />
+                          {detailStr && <span className="text-[10px] text-gray-400 block mt-1">{detailStr}</span>}
                         </div>
                       </div>
                     );
                   })}
                 </div>
                 <div>
-                  {(log.cardioKm > 0 || log.cardioTime > 0) && (
-                    <div className="bg-blue-50 p-2 rounded text-sm text-blue-800">
+                   {(log.cardioKm > 0 || log.cardioTime > 0) && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-sm text-blue-800 dark:text-blue-200">
                       <div className="font-bold mb-1">Cardio Total</div>
-                      <div className="mb-2">
-                        {log.cardioKm} km / {log.cardioKcal} kcal /{' '}
-                        {log.cardioTime} min
-                      </div>
-
-                      {/* PASKI CARDIO W HISTORII */}
+                      <div className="mb-2">{log.cardioKm} km / {log.cardioKcal} kcal / {log.cardioTime} min</div>
                       {cardioList.map((type) => {
                         const cData = logs[log.date]?.cardio?.[type];
                         if (!cData) return null;
                         const gKm = goals.daily[`${type}_km`];
                         const gTime = goals.daily[`${type}_time`];
-
-                        const isExceeded =
-                          (gKm && cData.km > gKm) ||
-                          (gTime && cData.time > gTime);
-
+                        const isExceeded = (gKm && cData.km > gKm) || (gTime && cData.time > gTime);
                         return (
-                          <div
-                            key={type}
-                            className="mt-1 border-t border-blue-100 pt-1"
-                          >
+                          <div key={type} className="mt-1 border-t border-blue-100 dark:border-blue-800 pt-1">
                             <div className="text-[10px] font-bold flex items-center gap-1">
-                              {type}
-                              {isExceeded && (
-                                <Flame
-                                  size={10}
-                                  className="text-red-500 fill-red-500 animate-pulse"
-                                />
-                              )}
+                              {type} {isExceeded && <Flame size={10} className="text-red-500 fill-red-500 animate-pulse" />}
                             </div>
-                            {gKm && (
-                              <ProgressBar
-                                current={cData.km}
-                                target={gKm}
-                                unit="km"
-                                size="sm"
-                                colorClass="bg-teal-500"
-                              />
-                            )}
-                            {gTime && (
-                              <ProgressBar
-                                current={cData.time}
-                                target={gTime}
-                                unit="min"
-                                size="sm"
-                                colorClass="bg-blue-500"
-                              />
-                            )}
+                            {gKm && <ProgressBar current={cData.km} target={gKm} unit="km" size="sm" colorClass="bg-teal-500" />}
+                            {gTime && <ProgressBar current={cData.time} target={gTime} unit="min" size="sm" colorClass="bg-blue-500" />}
                           </div>
                         );
                       })}
@@ -2303,72 +1506,55 @@ export default function WorkoutJournal() {
   );
 
   return (
-    <div className="min-h-screen p-4 md:p-8 font-sans text-gray-900 pb-20">
+    <div className={`min-h-screen p-4 md:p-8 font-sans pb-20 transition-colors duration-300 ${isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
+        <header className="flex flex-col md:flex-row justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 gap-4 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg shadow-blue-200 flex items-center justify-center text-white">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none flex items-center justify-center text-white">
               <Dumbbell size={20} className="transform -rotate-45" />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">
-                GymBuddy
-              </h1>
-              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
-                Twój plan treningowy
-              </p>
+              <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">GymBuddy</h1>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Twój plan treningowy</p>
             </div>
           </div>
 
-          <div className="flex bg-gray-100 p-1 rounded-lg overflow-x-auto">
-            {['day', 'goals', 'charts', 'history'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
-                  activeTab === tab
-                    ? 'bg-black text-white shadow-sm'
-                    : 'text-gray-600 hover:text-black'
-                }`}
-              >
-                {tab === 'day'
-                  ? 'Dzień'
-                  : tab === 'goals'
-                  ? 'Cele'
-                  : tab === 'charts'
-                  ? 'Wykresy'
-                  : 'Historia'}
-              </button>
-            ))}
+          <div className="flex items-center gap-3">
+            <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg overflow-x-auto">
+              {['day', 'goals', 'charts', 'history'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
+                    activeTab === tab
+                      ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  {tab === 'day' ? 'Dzień' : tab === 'goals' ? 'Cele' : tab === 'charts' ? 'Wykresy' : 'Historia'}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="p-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              title="Przełącz motyw"
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
           </div>
         </header>
 
-        {/* Global Date Picker (TERAZ JEDYNY) */}
+        {/* Global Date Picker */}
         {activeTab === 'day' && (
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-            <CustomDatePicker
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full sm:w-auto"
-            />
-            <Button
-              onClick={copyLastWorkout}
-              variant="outline"
-              size="sm"
-              className="text-xs whitespace-nowrap"
-            >
-              <Copy size={14} /> Kopiuj ostatni
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
+            <CustomDatePicker value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="w-full sm:w-auto" />
+            <Button onClick={copyLastWorkout} variant="outline" size="sm" className="text-xs whitespace-nowrap"><Copy size={14} /> Kopiuj ostatni</Button>
           </div>
         )}
 
-        <main>
-          {activeTab === 'day' && renderDayView()}
-          {activeTab === 'goals' && renderGoalsView()}
-          {activeTab === 'charts' && renderChartsView()}
-          {activeTab === 'history' && renderHistoryView()}
-        </main>
+        <main>{activeTab === 'day' && renderDayView()}{activeTab === 'goals' && renderGoalsView()}{activeTab === 'charts' && renderChartsView()}{activeTab === 'history' && renderHistoryView()}</main>
       </div>
     </div>
   );
