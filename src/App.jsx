@@ -1,4 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
+// IMPORT KLIENTA SUPABASE (Upewnij się, że plik supabaseClient.js istnieje w tym samym folderze)
+import { supabase } from './supabaseClient'; 
+
 import {
   LineChart,
   Line,
@@ -43,6 +46,8 @@ import {
   Moon,
   Sun,
   Layers,
+  User,
+  LogOut
 } from 'lucide-react';
 
 /* --- KONFIGURACJA TAILWIND Z DARK MODE --- */
@@ -53,7 +58,6 @@ if (typeof document !== 'undefined') {
     script.async = false;
     document.head.appendChild(script);
     
-    // Konfiguracja Tailwind dla Dark Mode
     const configScript = document.createElement('script');
     configScript.innerHTML = `
       tailwind.config = {
@@ -97,7 +101,7 @@ if (typeof document !== 'undefined') {
 
 // --- HELPERY DANYCH ---
 
-// LocalStorage Hook
+// 1. Zwykły LocalStorage (dla ustawień lokalnych jak motyw)
 const useStickyState = (defaultValue, key) => {
   const [value, setValue] = useState(() => {
     try {
@@ -110,6 +114,63 @@ const useStickyState = (defaultValue, key) => {
   useEffect(() => {
     window.localStorage.setItem(key, JSON.stringify(value));
   }, [key, value]);
+  return [value, setValue];
+};
+
+// 2. NOWY HOOK: CloudStorage (Supabase + LocalStorage)
+const useCloudState = (defaultValue, key) => {
+  const [value, setValue] = useState(() => {
+    try {
+      const stickyValue = window.localStorage.getItem(key);
+      return stickyValue !== null ? JSON.parse(stickyValue) : defaultValue;
+    } catch (error) {
+      return defaultValue;
+    }
+  });
+
+  // Efekt POBIERANIA danych z chmury
+  useEffect(() => {
+    let mounted = true;
+    const fetchFromCloud = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data, error } = await supabase
+          .from('user_data')
+          .select('value')
+          .eq('key', key)
+          .single();
+
+        if (data && mounted) {
+          setValue(data.value);
+          window.localStorage.setItem(key, JSON.stringify(data.value));
+        }
+      }
+    };
+    fetchFromCloud();
+    return () => { mounted = false; };
+  }, [key]);
+
+  // Efekt ZAPISYWANIA danych
+  useEffect(() => {
+    window.localStorage.setItem(key, JSON.stringify(value));
+
+    const saveToCloud = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase
+          .from('user_data')
+          .upsert({ 
+            user_id: session.user.id, 
+            key: key, 
+            value: value 
+          }, { onConflict: 'user_id, key' });
+      }
+    };
+
+    const timer = setTimeout(saveToCloud, 2000);
+    return () => clearTimeout(timer);
+  }, [key, value]);
+
   return [value, setValue];
 };
 
@@ -165,6 +226,157 @@ const formatDatePL = (dateString) => {
   });
 };
 
+// --- KOMPONENT: Auth Modal (Email + Hasło + Login) ---
+const AuthModal = ({ isOpen, onClose }) => {
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' });
+
+  // Reset pól
+  useEffect(() => {
+    setMessage({ text: '', type: '' });
+  }, [isOpen, isLoginMode]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      if (isLoginMode) {
+        // Logowanie
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        onClose();
+        window.location.reload(); 
+      } else {
+        // Rejestracja
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username: username },
+          },
+        });
+        if (error) throw error;
+        setMessage({ 
+          text: 'Rejestracja udana! Sprawdź email, aby potwierdzić konto.', 
+          type: 'success' 
+        });
+      }
+    } catch (error) {
+      setMessage({ text: error.message, type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in duration-200">
+        <button 
+          onClick={onClose} 
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+        >
+          <X size={20} />
+        </button>
+        
+        <h2 className="text-xl font-bold mb-1 dark:text-white flex items-center gap-2">
+          <User className="text-blue-500" /> 
+          {isLoginMode ? 'Witaj ponownie!' : 'Utwórz konto'}
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          {isLoginMode 
+            ? 'Zaloguj się, aby zsynchronizować treningi.' 
+            : 'Dołącz do GymBuddy i śledź postępy w chmurze.'}
+        </p>
+        
+        {message.text && (
+          <div className={`p-3 rounded mb-4 text-sm font-medium ${
+            message.type === 'error' 
+              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' 
+              : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+          }`}>
+            {message.text}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLoginMode && (
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Login</label>
+              <Input 
+                type="text" 
+                placeholder="Np. Arnold" 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                required={!isLoginMode}
+                className="bg-gray-50 dark:bg-gray-900"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Email</label>
+            <Input 
+              type="email" 
+              placeholder="twoj@email.com" 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              required 
+              className="bg-gray-50 dark:bg-gray-900"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Hasło</label>
+            <Input 
+              type="password" 
+              placeholder="••••••••" 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              required 
+              minLength={6}
+              className="bg-gray-50 dark:bg-gray-900"
+            />
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-2" 
+            disabled={loading}
+          >
+            {loading 
+              ? 'Przetwarzanie...' 
+              : (isLoginMode ? 'Zaloguj się' : 'Zarejestruj się')
+            }
+          </Button>
+        </form>
+
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {isLoginMode ? 'Nie masz jeszcze konta?' : 'Masz już konto?'}
+          </p>
+          <button 
+            onClick={() => setIsLoginMode(!isLoginMode)}
+            className="text-sm font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mt-1"
+          >
+            {isLoginMode ? 'Zarejestruj się za darmo' : 'Przejdź do logowania'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- KOMPONENT: Custom Date Picker ---
 const CustomDatePicker = ({
   value,
@@ -216,9 +428,10 @@ const Button = ({
   variant = 'primary',
   className = '',
   size = 'normal',
+  disabled = false,
 }) => {
   const base =
-    'rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
+    'rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed';
   const sizes = {
     normal: 'px-4 py-2 text-sm',
     icon: 'p-2',
@@ -235,6 +448,7 @@ const Button = ({
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={`${base} ${sizes[size] || sizes.normal} ${
         styles[variant]
       } ${className}`}
@@ -572,36 +786,23 @@ const ActivityHeatmap = ({ logs, goals }) => {
 
 export default function WorkoutJournal() {
   const [activeTab, setActiveTab] = useState('day');
-  const [isDarkMode, setIsDarkMode] = useStickyState(false, 'gymbuddy_theme');
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
-  const [widgetDate, setWidgetDate] = useState(selectedDate);
-  const [summaryMode, setSummaryMode] = useState('week');
-  const [dateRange, setDateRange] = useState({
-    start: new Date(new Date().setDate(new Date().getDate() - 6))
-      .toISOString()
-      .split('T')[0],
-    end: new Date().toISOString().split('T')[0],
-  });
-
-  // --- LOCAL STORAGE STATE ---
-  const [exercisesList, setExercisesList] = useStickyState(
+  
+  // Zmiana 1: Integracja Supabase Cloud State
+  const [exercisesList, setExercisesList] = useCloudState(
     ['Pompki', 'Przysiady', 'Plank'],
     'gymbuddy_exercises'
   );
   
-  // NOWE: Grupy ćwiczeń
-  const [exerciseGroups, setExerciseGroups] = useStickyState(
+  const [exerciseGroups, setExerciseGroups] = useCloudState(
     { Pompki: 'Klatka', Przysiady: 'Nogi', Plank: 'Brzuch' },
     'gymbuddy_exercise_groups'
   );
 
-  const [cardioList, setCardioList] = useStickyState(
+  const [cardioList, setCardioList] = useCloudState(
     ['Bieganie', 'Rower'],
     'gymbuddy_cardio'
   );
-  const [goals, setGoals] = useStickyState(
+  const [goals, setGoals] = useCloudState(
     {
       daily: {
         Pompki: { sets: 3, reps: 20 },
@@ -614,9 +815,9 @@ export default function WorkoutJournal() {
     'gymbuddy_goals'
   );
 
-  const [logs, setLogs] = useStickyState(
+  const [logs, setLogs] = useCloudState(
     {
-      [selectedDate]: {
+      [new Date().toISOString().split('T')[0]]: {
         weight: 75,
         measurements: {},
         cardio: {},
@@ -625,6 +826,42 @@ export default function WorkoutJournal() {
     },
     'gymbuddy_logs'
   );
+
+  // Motyw zostaje lokalny
+  const [isDarkMode, setIsDarkMode] = useStickyState(false, 'gymbuddy_theme');
+
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split('T')[0]
+  );
+  const [widgetDate, setWidgetDate] = useState(selectedDate);
+  const [summaryMode, setSummaryMode] = useState('week');
+  const [dateRange, setDateRange] = useState({
+    start: new Date(new Date().setDate(new Date().getDate() - 6))
+      .toISOString()
+      .split('T')[0],
+    end: new Date().toISOString().split('T')[0],
+  });
+
+  // Zmiana 2: Obsługa sesji i Auth
+  const [session, setSession] = useState(null);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload(); 
+  };
 
   useEffect(() => {
     setWidgetDate(selectedDate);
@@ -1507,6 +1744,10 @@ export default function WorkoutJournal() {
 
   return (
     <div className={`min-h-screen p-4 md:p-8 font-sans pb-20 transition-colors duration-300 ${isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+      
+      {/* Modal Logowania */}
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 gap-4 transition-colors">
@@ -1536,6 +1777,26 @@ export default function WorkoutJournal() {
                 </button>
               ))}
             </div>
+            
+            {/* PRZYCISK LOGOWANIA / WYLOGOWANIA */}
+            {session ? (
+               <button 
+                 onClick={handleLogout}
+                 className="p-2.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                 title="Wyloguj się"
+               >
+                 <LogOut size={20} />
+               </button>
+             ) : (
+               <button 
+                 onClick={() => setIsAuthOpen(true)}
+                 className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                 title="Zaloguj do chmury"
+               >
+                 <User size={20} />
+               </button>
+             )}
+
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className="p-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
